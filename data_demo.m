@@ -6,7 +6,8 @@
 
 %% Repos to download
 
-% Clone these repos: 
+% Clone these repos and add to the Matlab path (Home > Set Path > Add with
+% Subfolders...)
 % https://github.com/PetersNeuroLab/PetersLab_analysis
 % https://github.com/petersaj/AP_scripts_peterslab
 
@@ -157,15 +158,101 @@ plab.locations.filename('server','AP001',[],[],'histology')
 
 % My loading code is in my repository (petersaj/AP_scripts_peterslab) and
 % is called with 'ap.load_recording' after defining animal/day/time. This
-% loads an example dataset with passive stimuli, widefield, and ephys:
+% loads an example dataset with passive stimuli, widefield, and ephys. Run
+% this data, then each data type will be explained below:
 animal = 'AP005';
 rec_day = '2023-06-21';
 rec_time = '1859';
 verbose = true; % this turns on/off progress display in command line
 ap.load_recording;
 
-% --- Recording locations
+% --- Timelite
 
+% "Timelite" is our GUI for recording analog signals with a DAQ. These
+% include things like wheel movement, stimulus screen photodiode, camera
+% frame captures, etc. It is saved as:
+% server\Data\animal\day\time\timelite.mat
+% as the structure 'timelite':
+timelite
+
+% The structure 'timelite' contains these structures: 
+% - daq_info: information about the DAQ recording
+% - data: the recorded data as N timepoints x M signals
+% - timestamps: the timestamps for each data point as N timepoints x 1
+
+% The names of the recorded signals are under
+% 'timelite.daq_info(channel number).channel_name'. For example, the
+% photodiode is recorded under channel 5, and the name can be found by:
+photodiode_channel = 5;
+timelite.daq_info(photodiode_channel).channel_name
+
+% The corresponding data is in the 5th column of 'data'. For example, this
+% plots photodiode data by time: 
+figure;plot(timelite.data(:,photodiode_channel));
+xlabel('Time (s)');
+ylabel('Voltage');
+title('Photodiode signal');
+
+% (The photodiode is over a square on the screen that turns white/black to
+% indicate changes to the stimulus).
+
+% [EXERCISE] 
+% 1) Write code to identify the channel number for 'widefield_camera'
+% (widefield camera exposures) and plot the data for that channel.
+% 2) Find the timestamps when the widefield camera starts each exposure
+% (times when the signal flips from low to high). 
+% 3) Check that the timestamps in 2 match the variable
+% 'widefield_expose_times' (this is created in ap.load_recording)
+
+% --- Bonsai
+
+% We use the program Bonsai to run our stimuli and tasks
+% (https://bonsai-rx.org/). Bonsai is an actively supported, highly
+% customizable, visual interfaced framework for designing experiments. 
+
+% Bonsai files are called 'workflows'. ap.load_recording loads the name of
+% the currently loaded workflow as 'bonsai_workflow'. This one is
+% 'lcr_passive', which is passive stimuli presented on the left, center,
+% and right screens.
+bonsai_workflow
+
+% Bonsai can change how it saves data, and loading scripts can specify how
+% that data is loaded and parsed. In this demo, ap.load_recording loads
+% data from Bonsai as 'trial_events':
+trial_events
+% which is a structure containing:
+% - parameters: parameter values corresponding to the whole workflow, e.g.
+% the duration that each stimulus was displayed was:
+trial_events.parameters.StimDuration
+% - values: an N trials x 1 array of values of saved events, e.g. the
+% order of X-positions for the 3 stimuli presented on trial 4 was:
+trial_events.values(4).TrialStimX
+% - timestamps: an N trials x 1 array of timestamps of saved events from
+% 'values', e.g. the time each of 3 stimuli was turned on/off on trial 4
+% was:
+trial_events.timestamps(4).StimOn
+
+% Note that timing information in Bonsai is only approximate (when the
+% software gave the command), not actual (when the stimulus was physically
+% drawn on the screen). All time information should be used from Timelite,
+% and only qualitative information should be used from Bonsai (e.g. which
+% stimulus was presented on a trial).
+
+% [EXERCISE] 
+% The stimulus onset times are loaded by ap.load_recording as
+% 'stimOn_times'. Write code to pull out a subset of these timestamps
+% corresponding to a stimulus X position (TrialStimX) of 90 (meaning it was
+% on the right-hand screen).
+
+% --- Mousecam
+
+
+
+% --- Widefield
+
+
+
+% --- Electrophysiology
 
 
 

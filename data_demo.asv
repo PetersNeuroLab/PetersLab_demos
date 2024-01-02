@@ -6,7 +6,8 @@
 
 %% Repos to download
 
-% Clone these repos: 
+% Clone these repos and add to the Matlab path (Home > Set Path > Add with
+% Subfolders...)
 % https://github.com/PetersNeuroLab/PetersLab_analysis
 % https://github.com/petersaj/AP_scripts_peterslab
 
@@ -151,29 +152,108 @@ plab.locations.filename('server','AP001',[],[],'histology')
 %% Loading data
 
 % There isn't standardized lab code for loading data, since this is often
-% customized for each person depending on their needs. As a template (or if
-% 
+% customized for each person depending on their needs. This block demos my
+% code, which can be used as a template, or as-is if it works for you (note
+% that it's subject to regular changes).
 
-animal = 'AM005';
-rec_day = '2023-12-07';
+% My loading code is in my repository (petersaj/AP_scripts_peterslab) and
+% is called with 'ap.load_recording' after defining animal/day/time. This
+% loads an example dataset with passive stimuli, widefield, and ephys. Run
+% this data, then each data type will be explained below:
+animal = 'AP005';
+rec_day = '2023-06-21';
+rec_time = '1859';
+verbose = true; % this turns on/off progress display in command line
+ap.load_recording;
 
-% workflow = 'lcr_passive';
-workflow = 'lcr_passive_fullscreen';
-% workflow = 'stim_wheel_right*';
-% workflow = 'sparse_noise';
-% workflow = 'black_screen';
-% workflow = 'gray_screen';
+% --- Timelite
 
-rec_time = plab.find_recordings(animal,rec_day,workflow).recording{end};
+% "Timelite" is our GUI for recording analog signals with a DAQ. These
+% include things like wheel movement, stimulus screen photodiode, camera
+% frame captures, etc. It is saved as:
+% server\Data\animal\day\time\timelite.mat
+% as the structure 'timelite':
+timelite
 
+% The structure 'timelite' contains these structures: 
+% - daq_info: information about the DAQ recording
+% - data: the recorded data as N timepoints x M signals
+% - timestamps: the timestamps for each data point as N timepoints x 1
+
+% The names of the recorded signals are under
+% 'timelite.daq_info(channel number).channel_name'. For example, the
+% photodiode is recorded under channel 5, and the name can be found by:
+photodiode_channel = 5;
+timelite.daq_info(photodiode_channel).channel_name
+
+% The corresponding data is in the 5th column of 'data'. For example, this
+% plots photodiode data by time: 
+figure;plot(timelite.data(:,photodiode_channel));
+xlabel('Time (s)');
+ylabel('Voltage');
+title('Photodiode signal');
+
+% (The photodiode is over a square on the screen that turns white/black to
+% indicate changes to the stimulus).
+
+% [EXERCISE] 
+% 1) Write code to identify the channel number for 'widefield_camera'
+% (widefield camera exposures) and plot the data for that channel.
+% 2) Find the timestamps when the widefield camera starts each exposure
+% (times when the signal flips from low to high). 
+% 3) Check that the timestamps in 2 match the variable
+% 'widefield_expose_times' (this is created in ap.load_recording)
+
+% --- Bonsai
+
+% We use the program Bonsai to run our stimuli and tasks
+% (https://bonsai-rx.org/). Bonsai is an actively supported, highly
+% customizable, visual interfaced framework for designing experiments. 
+
+% Bonsai files are called 'workflows'. ap.load_recording loads the name of
+% the currently loaded workflow as 'bonsai_workflow'. This one is
+% 'lcr_passive', which is passive stimuli presented on the left, center,
+% and right screens.
+bonsai_workflow
+
+% Bonsai can change how it saves data, and loading scripts can specify how
+% that data is loaded and parsed. In this demo, ap.load_recording loads
+% data from Bonsai as 'trial_events':
+trial_events
+% which is a structure containing:
+% - parameters: parameter values corresponding to the whole workflow, e.g.
+% the duration that each stimulus was displayed was:
+trial_events.parameters.StimDuration
+% - values: an N trials x 1 array of values of saved events, e.g. the
+% order of X-positions for the 3 stimuli presented on trial 4 was:
+trial_events.values(4).TrialStimX
+% - timestamps: an N trials x 1 array of timestamps of saved events from
+% 'values', e.g. the time each of 3 stimuli was turned on/off on trial 4
+% was:
+trial_events.timestamps(4).StimOn
+
+% Note that timing information in Bonsai 
+
+
+% --- Mousecam
+
+
+
+% --- Widefield
+
+
+
+% --- Electrophysiology
+
+
+
+
+
+
+% TO LOAD PARTS
 % load_parts.widefield = true;
 % load_parts.ephys = true;
 % load_parts.mousecam = true;
-
-verbose = true;
-ap.load_recording;
-
-
 
 
 
