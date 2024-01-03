@@ -4,7 +4,7 @@
 % Whenever you see a line of code, run it and continue reading
 % [EXERCISE] marks a section with instructions to complete
 
-%% Repos to download
+%% Github repositories to download
 
 % Clone these repos and add to the Matlab path (Home > Set Path > Add with
 % Subfolders...)
@@ -247,7 +247,7 @@ trial_events.timestamps(4).StimOn
 % --- Mousecam
 
 % We record video of the front of the mouse during all experiments. The
-% filename is loaded in ap.load_experiment as:
+% filename is loaded in ap.load_recording as:
 mousecam_fn
 % and the timestamps of each frame (in Timelite clock) is:
 mousecam_times
@@ -286,20 +286,40 @@ ap.imscroll(mousecam_im);
 % 90 presentations, and separately for stimulus X = -90. Is there a
 % difference in behavior when these two stimuli are presented?
 
+% --- Widefield and electrophysiology
 
-% --- Widefield
+% If available in a recording, ap.load_recording will load and prepare
+% widefield and electrophysiology data. For demos on working with that
+% data, see: 
+% - plab_widefield_demo
+% - plab_ephys_demo
 
+% I have a function to scroll through experiment data for exploratory
+% purposes, which displays the mousecam (left), widefield (center), and
+% multiunit ephys (right), which can be scrolled through time:
+ap.expscroll
 
+% [EXERCISE] 
+% There is a drop of sucrose available to the mouse at the beginning of
+% this recording (left over from the task done previously). Which part of
+% the ephys probe has increased activity when the mouse consumes this?
 
-% --- Electrophysiology
+% --- Loading partial datasets
 
+% Recordings can be part-loaded by ap.load_recording if only some data is
+% necessary by creating a 'load_parts' structure, which can toggle loading
+% with fields 'widefield','ephys','mousecam'. Timelite and behavior are
+% always loaded. If 'load_parts' exists, any field not defined will default
+% to not loading. For example, in this dataset, you can turn off loading of
+% widefield and ephys data by doing:
+clear all % (clears data loaded above)
+animal = 'AP005';
+rec_day = '2023-06-21';
+rec_time = '1859';
+load_parts.mousecam = true; % (this is the new line)
+verbose = true;
+ap.load_recording; % (this is much faster now and omits widefield and ephys)
 
-
-
-% TO LOAD PARTS
-% load_parts.widefield = true;
-% load_parts.ephys = true;
-% load_parts.mousecam = true;
 
 
 
