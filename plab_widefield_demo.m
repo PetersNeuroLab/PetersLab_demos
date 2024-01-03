@@ -24,7 +24,7 @@ rec_time = '1616';
 verbose = true;
 ap.load_recording;
 
-%% Widefield data format
+%% Widefield data format, and working with widefield data
 
 % Widefield data is captured in pixels at ~400x400, which is 160k pixels
 % per frame. This can be hard to work with, because it takes up a lot of
@@ -247,7 +247,11 @@ ap.wf_corrviewer(wf_U,wf_V);
 % What regions do your divisions correspond to?
 
 
-
+%%%% TO DO HERE: 
+% finished Andrada_wf_demo_1 equivalent, move on to 2
+% - interp and defining things by time (put this above, where they're doing
+% aligned averages?)
+% - preprocessing section (hemo, df/f, deconv)
 
 
 
