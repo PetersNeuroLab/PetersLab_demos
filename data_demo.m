@@ -149,7 +149,7 @@ plab.locations.filename('server','AP001',[],[],'histology')
 % subfolder within the folder for that recording. Write a line to check
 % whether that path exists on the server.
 
-%% Loading data
+%% Loading data, and data types
 
 % There isn't standardized lab code for loading data, since this is often
 % customized for each person depending on their needs. This block demos my
@@ -246,6 +246,45 @@ trial_events.timestamps(4).StimOn
 
 % --- Mousecam
 
+% We record video of the front of the mouse during all experiments. The
+% filename is loaded in ap.load_experiment as:
+mousecam_fn
+% and the timestamps of each frame (in Timelite clock) is:
+mousecam_times
+
+% Mousecam images can be read into Matlab with a VideoReader object. For
+% example:
+mousecam_vr = VideoReader(mousecam_fn); % create VideoReader object
+
+load_frame = 1; % define frame to read
+mousecam_im = read(mousecam_vr,load_frame); % read frame
+
+figure; % create a figure
+imagesc(mousecam_im); % draw the image (sc = scaled colors)
+axis image % make the x/y axes have equal aspect ratios
+colormap('gray'); % set the colormap to gray
+
+% You can also load in multiple frames at the same time by defining the
+% start/end frame. For example:
+load_frames = [1,10]; % define frame interval to read
+mousecam_im = read(mousecam_vr,load_frames); % read frame
+% (the VideoReader by default loads in multiple images in the 4th
+% dimension, allowing for colors in the 3rd dimension. Our images are
+% grayscale, so we can use 'squeeze' to remove the singleton 3rd dimension.
+% Look at the size of the natively loaded data: 
+size(mousecam_im)
+% and then the size of the 'squeezed' data:)
+mousecam_im = squeeze(mousecam_im); 
+size(mousecam_im)
+% This is an example of how to view a 3D matrix using my function
+% ap.imscroll, which plots each 'page' (dim 1+2) which can be scrolled
+% through in dim 3:
+ap.imscroll(mousecam_im);
+
+% [EXERCISE] 
+% Create an average mousecam movie for -20:+20 frames around stimulus X =
+% 90 presentations, and separately for stimulus X = -90. Is there a
+% difference in behavior when these two stimuli are presented?
 
 
 % --- Widefield
