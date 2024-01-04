@@ -204,6 +204,26 @@ title('Photodiode signal');
 % 3) Check that the timestamps in 2 match the variable
 % 'widefield_expose_times' (this is created in ap.load_recording)
 
+% One important signal recorded in Timelite is the wheel which the mouse
+% can turn left and right. This is in the channel called 'wheel', which
+% represents the position of the wheel relative to the start of the
+% recording. Besides position, it is also helpful to have wheel velocity,
+% and binary classification of whether the wheel is moving or not. This
+% information is calculated by 'ap.parse_wheel', and outputs these
+% variables - 
+% wheel_velocity: velocity of the wheel for each Timelite timestamp
+% wheel_move: binary vector representing movement (1) or quiescence (0)
+
+% [EXERCISE] 
+% 1) Plot time vs. raw Timelite wheel position and the wheel velocity on
+% separate axes. Using 'wheel_move', plot the wheel velocity only when the
+% wheel is moving in a separate color (by setting quiescent times to NaN,
+% which are not plotted).
+%
+% 2) Using 'wheel_move', find the onset and offset times of all movements.
+% Plot these as lines (colored differently for onset and offset) on your
+% previous velocity plot.
+
 % --- Bonsai
 
 % We use the program Bonsai to run our stimuli and tasks

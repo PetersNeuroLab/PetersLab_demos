@@ -17,14 +17,14 @@
 % data (specifically in ap.load_widefield), so that will be used for this
 % demo.
 
-% Load this data for the following demo: 
+% Load this data for the following 2 sections: 
 animal = 'AP010';
 rec_day = '2023-08-07';
 rec_time = '1616';
 verbose = true;
 ap.load_recording;
 
-%% Widefield data format, and working with widefield data
+%% Working with widefield data
 
 % Widefield data is captured in pixels at ~400x400, which is 160k pixels
 % per frame. This can be hard to work with, because it takes up a lot of
@@ -310,30 +310,6 @@ roi_trace = ap.wf_roi(wf_U,wf_V,wf_avg,[],roi_mask);
 figure;plot(roi_trace);
 title('ROI fluorescence (with previous mask)');
 
-% --- Correlations in widefield data
-
-% This is also an interesting tool to play with: this gives a map of
-% correlations between a clicked pixel and all other pixels. Try clicking
-% around the brain to get a sense for the pattern of correlations, also you
-% can press 'h' to enable 'hover mode' that follows your cursor: 
-ap.wf_corrviewer(wf_U,wf_V);
-
-% [EXERCISE] 
-% In the correlation viewer above: 
-%
-% 1) There should be some regions that have topographic relationships,
-% where adjacent pixels in one region are correlated to adjacent pixels in
-% another region. You should see the hotspots of correlation move in an
-% ordered way across multiple regions, and then come together at specific
-% points. Which regions have this relationship? Where do the correlations
-% join together? 
-% 
-% 2) If you had to divide the cortex into regions based on the correlation
-% patterns, where would you draw the lines? Take a look at Figure 3 in this
-% paper which labels dorsal cortical areas:
-% https://www.cell.com/cell/fulltext/S0092-8674(20)30402-5.
-% What regions do your divisions correspond to?
-
 %% Widefield preprocessing
 
 % The widefield data demoed above has had a few preprocessing steps beyond
@@ -459,27 +435,22 @@ colormap(hsv);
 % Blood in the brain introduces an artifact in our imaging: blood is routed
 % to active areas, which obscures the fluorescence and darkens the signal.
 % This is generally slow (starts ~0.5s after activity and can last ~2s),
-% and is almost removed just by deconvolution (which only pulls out fast
-% signals), but we still want to remove this artifact to have more accurate
-% data.
+% and is almost removed just by deconvolution (which pulls out only fast
+% components), but we still want to remove this artifact to have more
+% accurate data.
 
 % The technique to remove this artifact is to use two excitation lights,
 % blue and violet, to trigger light emission from GCaMP in different ways.
-% When GCaMP is excited by blue light, it Blue light excites in amounts GCaMP differently depending
+% When GCaMP is excited by blue light, it emits more photons if it's bound
+% to calcium than if it's not (which is why we get activity-dependent
+% fluorescence). When GCaMP is excited by violet light, it emits the same
+% amount of photos regardless of whether it's bound to calcium or not (so
+% the violet-excited GCaMP signal is activity-independent).
 
-% Our imaging is done with fluorescence, excitation light of one wavelength
-% (blue or violet) triggers light emission from GCaMP in a different
-% wavelength (green). We use two different excitation colors because they
-% each excite GCaMP in a different way: blue excites GCaMP differently
-% depending on whether it's bound to calcium (bright with calcium, dark
-% without calcium), and violet excites GCaMP the same regardless of whether
-% it's bound to calcium. 
-
-% The reason this is useful is to counteract hemodynamic effects: when an
-% area is active, blood comes into that area, which occludes our GCaMP
-% fluorescence. We want to have a separate measure of these hemodynamic
-% effects (how much light is the blood blocking?) so that we can 'correct'
-% our activity for any effects from blood that we don't want to measure.
+% We then have activity-dependent (blue) and activity-independent (violet)
+% signals, both of which are sometimes dimmed by blood. If we properly
+% scale the violet signal and subtract it from the blue signal, we then
+% remove the blood (hemodynamic) effect, leaving just the activity effect.
 
 % This is corrected in the loading script, but we can still look at these
 % components separately. So far, you've been using the
@@ -488,24 +459,62 @@ colormap(hsv);
 % blue (activity): Un, fVn (n for 'neural')
 % violet (hemodynamic): Uh, fVh (h for 'hemodynamic');
 
-% EXERCISE: Make a stimulus-triggered average movie of fluorescence from
-% blue light (activity) and from violet light (hemodynamics). Plot
-% stimulus-triggered average activity in V1 for both activity and
-% hemodynamics. What are the main features of these plots, and why do they
-% happen?
+% [EXERCISE] 
+% Non-hemodynamic-corrected (raw) data is loaded as 'wf_V_raw{1}'. As
+% before, make a stimulus-triggered widefield movie for stimulus X = -90
+% spanning -0.5s:+4s, for both raw data and hemodynamic-corrected data
+% ('V_neuro_hemocorr'). Draw an ROI over the responsive areas in both
+% movies and plot the traces for both ROIs together on one plot. What are
+% the differences between the traces?
+
+%% Widefield responses across the cortex
+
+% Load this data for the following section: 
+animal = 'AP010';
+rec_day = '2023-08-13';
+rec_time = '1555';
+verbose = true;
+ap.load_recording;
+
+% --- Regional correlations in widefield data
+
+% Our widefield images span the whole dorsal sorface of the brain. To get a
+% feel for how areas are arranged, it can be useful to look at correlations
+% between pixels, which reveals r
+
+% This is also an interesting tool to play with: this gives a map of
+% correlations between a clicked pixel and all other pixels. Try clicking
+% around the brain to get a sense for the pattern of correlations, also you
+% can press 'h' to enable 'hover mode' that follows your cursor: 
+ap.wf_corrviewer(wf_U,wf_V);
+
+% [EXERCISE] 
+% In the correlation viewer above: 
+%
+% 1) There should be some regions that have topographic relationships,
+% where adjacent pixels in one region are correlated to adjacent pixels in
+% another region. You should see the hotspots of correlation move in an
+% ordered way across multiple regions, and then come together at specific
+% points. Which regions have this relationship? Where do the correlations
+% join together? 
+% 
+% 2) If you had to divide the cortex into regions based on the correlation
+% patterns, where would you draw the lines? Take a look at Figure 3 in this
+% paper which labels dorsal cortical areas:
+% https://www.cell.com/cell/fulltext/S0092-8674(20)30402-5.
+% What regions do your divisions correspond to?
 
 
 
 
+%% Sections to add: 
+% Andrada_wf_demo_3
+% movement (wheel trace, discretize velocity?)
+% retinotopy
 
-
-
-
-
-
-
-
-
+% Andrada_wf_demo_4
+% alignment across days
+% converting into master U
 
 
 

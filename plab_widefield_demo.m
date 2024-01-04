@@ -17,14 +17,14 @@
 % data (specifically in ap.load_widefield), so that will be used for this
 % demo.
 
-% Load this data for the following demo: 
+% Load this data for the following 2 sections: 
 animal = 'AP010';
 rec_day = '2023-08-07';
 rec_time = '1616';
 verbose = true;
 ap.load_recording;
 
-%% Widefield data format, and working with widefield data
+%% Working with widefield data
 
 % Widefield data is captured in pixels at ~400x400, which is 160k pixels
 % per frame. This can be hard to work with, because it takes up a lot of
@@ -310,30 +310,6 @@ roi_trace = ap.wf_roi(wf_U,wf_V,wf_avg,[],roi_mask);
 figure;plot(roi_trace);
 title('ROI fluorescence (with previous mask)');
 
-% --- Correlations in widefield data
-
-% This is also an interesting tool to play with: this gives a map of
-% correlations between a clicked pixel and all other pixels. Try clicking
-% around the brain to get a sense for the pattern of correlations, also you
-% can press 'h' to enable 'hover mode' that follows your cursor: 
-ap.wf_corrviewer(wf_U,wf_V);
-
-% [EXERCISE] 
-% In the correlation viewer above: 
-%
-% 1) There should be some regions that have topographic relationships,
-% where adjacent pixels in one region are correlated to adjacent pixels in
-% another region. You should see the hotspots of correlation move in an
-% ordered way across multiple regions, and then come together at specific
-% points. Which regions have this relationship? Where do the correlations
-% join together? 
-% 
-% 2) If you had to divide the cortex into regions based on the correlation
-% patterns, where would you draw the lines? Take a look at Figure 3 in this
-% paper which labels dorsal cortical areas:
-% https://www.cell.com/cell/fulltext/S0092-8674(20)30402-5.
-% What regions do your divisions correspond to?
-
 %% Widefield preprocessing
 
 % The widefield data demoed above has had a few preprocessing steps beyond
@@ -490,6 +466,53 @@ colormap(hsv);
 % ('V_neuro_hemocorr'). Draw an ROI over the responsive areas in both
 % movies and plot the traces for both ROIs together on one plot. What are
 % the differences between the traces?
+
+%% Widefield responses across the cortex
+
+% Load this data for the following section: 
+animal = 'AP010';
+rec_day = '2023-08-13';
+rec_time = '1555';
+verbose = true;
+ap.load_recording;
+
+% --- Regional correlations in widefield data
+
+% Our widefield images span the whole dorsal sorface of the brain. To get a
+% feel for where areas are, it can be useful to look at correlations
+% between pixels. This is a tool to explore that: it gives a map of
+% correlations between a clicked pixel and all other pixels. Try clicking
+% around the brain to get a sense for the pattern of correlations, also you
+% can press 'h' to enable 'hover mode' that follows your cursor:
+ap.wf_corrviewer(wf_U,wf_V);
+
+% [EXERCISE] 
+% In the correlation viewer above: 
+%
+% 1) There should be some regions that have topographic relationships,
+% where adjacent pixels in one region are correlated to adjacent pixels in
+% another region. You should see the hotspots of correlation move in an
+% ordered way across multiple regions, and then come together at specific
+% points. Which regions have this relationship? Where do the correlations
+% join together? 
+% 
+% 2) If you had to divide the cortex into regions based on the correlation
+% patterns, where would you draw the lines? Take a look at Figure 3 in this
+% paper which labels dorsal cortical areas:
+% https://www.cell.com/cell/fulltext/S0092-8674(20)30402-5.
+% What regions do your divisions correspond to?
+
+% --- Regional activity correlating with task events
+
+% In the loaded dataset, the mouse is performing a task where a stimulus
+% is presented on the right-hand screen, then moving the wheel brings the
+% stimulus to the center to trigger a sucrose reward. 
+
+% The wheel position is recorded in Timelite as a channel called 'wheel', 
+
+[wheel_velocity,wheel_move] = ap.parse_wheel(wheel_position,timelite.daq_info(timelite_wheel_idx).rate);
+
+
 
 
 %% Sections to add: 
