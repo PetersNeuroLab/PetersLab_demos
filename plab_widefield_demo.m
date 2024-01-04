@@ -180,10 +180,89 @@ axis image off
 %
 % 3) The Bonsai workflow in the loaded data is 'lcr_passive', which is
 % passive stimulus presentations as described in the demo 'plab_data_demo'.
-% Using what you learned from that demo, make a stimulus-triggered average
-% movie of widefield fluorescence for -10:30 frames around stimulus
-% presentations. Do this separately for stimulus X positions = -90 (left),
-% 0 (center) and 90 (right).
+% Using what you learned from that demo, make a stimulus-triggered
+% (aligned) average movie of widefield fluorescence for -35:35 frames
+% around stimulus presentations. Do this separately for stimulus X
+% positions = -90 (left), 0 (center) and 90 (right). You'll need to use the
+% variable 'stimOn_times', which give the onset time of all stimuli, and
+% 'wf_t', which gives the timestamp for each widefield frame.
+
+% Using "frames" as units to work with widefield data (as in 3 in the
+% exercise above, grabbing frames relative to an event) has some downside.
+% First, it's less intuitive to use than time, Second, it can be variable
+% with respect to an actual event time, because the framerate is
+% independent of events - as a diagram, if "|" is a frame capture, "x" is
+% an event, and "." is an arbitrary unit of time, this is a possible
+% scenario: 
+% .....|....x|.....|.....|x....|.....
+% Note that the first "x" has a frame in the next timepoint, while the
+% second "x" has a frame at a much later relative timepoint. If you just
+% look for the next frame after each event "x" then, you're actually
+% averaging data from different relative timepoints, slightly smearing your
+% data in time. We can account for this by interpolating data between
+% frames. For example, in the diagram below, we only have data at "|", but
+% we can estimate data at "o" with a linear change in time between frames.
+% .....|..o..|.....
+% In Matlab, we can do interpolation with the 'interp1' function. This
+% function takes a set of known data, and interpolates data between the
+% points at specific points. Here's an example, which plots the "actual"
+% data, the line between data points, and the interpolated data as red
+% points:
+% (this interpolates data)
+x = [0;1]; % x-values for data
+y = [5;6]; % y-values for data
+x_interp = [0.2;0.5]; % x-values we want to interpolate y values for
+y_interp = interp1(x,y,x_interp); % perform the interpolation
+% (this plots the above interpolation)
+figure; hold on;
+plot(x,y,'.','MarkerSize',20); % plot data
+line(x,y); % draw a line for data
+plot(x_interp,y_interp,'.r','MarkerSize',20); % plot interpolated data
+xlim([-1,2]);
+ylim([4,7]);
+legend({'Data','Line between data points','Interpolated data'});
+xlabel('X');ylabel('Y');
+
+% If our data is multi-dimensional at given timepoints, we can also
+% interpolate for each dimension simultanously. Here's an example, note
+% it's almost the same as above, except the y-values have 2 dimensions.
+x = [0;1]; % x-values for data
+y = [5,7;6,8]; % y-values for data
+x_interp = [0.2;0.5]; % x-values we want to interpolate y values for
+y_interp = interp1(x,y,x_interp); % perform the interpolation
+% (this plots the above interpolation)
+figure; hold on;
+plot(x,y,'.','MarkerSize',20); % plot data
+line(x,y); % draw a line for data
+plot(x_interp,y_interp,'.r','MarkerSize',20); % plot interpolated data
+xlim([-1,2]);
+ylim([4,9]);
+legend({'Data dim 1','Data dim 2','','','Interpolated data'});
+xlabel('X');ylabel('Y');
+
+% Because linear interpolation is a linear operation, for widefield data,
+% we can do this on the V's (rather than needing to work with pixels). For
+% example, if we want to get a widefield frame at an arbitrary timepoint,
+% we can do this:
+grab_time = 100; % timepoint to grab (seconds, in Timelite clock)
+% (Note: some transposing is required in the interpolation step below: the
+% V's are stored as component x time, but 'interp1' requires 'y' data to be
+% time x dimension. So, we transpose the input (with '), then transpose the
+% output, which make the input the right orientation for 'interp1', and the
+% output our normal orientation for V):
+V_interp = interp1(wf_t,wf_V',grab_time)';
+px_interp = plab.wf.svd2px(wf_U,V_interp);
+figure; colormap(gray);
+imagesc(px_interp);
+axis image
+title(sprintf('Frame interpolated at t = %g',grab_time));
+
+% [EXERCISE] 
+% Use interpolation to make a stimulus-triggered average as above, but
+% using time instead of frames. Use stimulus X position = -90, and grab
+% time spanning -1s:1s around the stimulus. Make two movies, one with 0.3s
+% resolution (i.e. t = [-1s,-0.7s,-0.4s...]) and one with 0.1s resolution
+% (i.e. t = [-1s,-0.9s,-0.8s...])
 
 % In the same way that we can do linear operations in time on the V's
 % above, we can do linear operations in space on the U's. For example, if
