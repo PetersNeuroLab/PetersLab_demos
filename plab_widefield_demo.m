@@ -49,6 +49,8 @@ ap.load_recording;
 % since this explains >95% of the variance. This brings the memory in our
 % example from 8.6GB to 1.5GB.
 
+% --- Working with widefield SVD data
+
 % ap.load_recording loads these components as: 
 % wf_U: U (spatial components - Y pixels x X pixels x N components)
 % wf_V: V (temporal components - N components x M timepoints)
@@ -157,6 +159,8 @@ example_fluorescence_frames = plab.wf.svd2px(wf_U,wf_V(:,use_frames));
 ap.imscroll(example_fluorescence_frames);
 axis image;
 
+% --- Operations on widefield SVD temporal components (V's)
+
 % Another benefit of SVD is that we can do any linear operations (+,-,/,*)
 % on the V temporal components, rather than reconstructed pixels, because
 % SVD reconstruction is a linear operation. For example, if we wanted to
@@ -264,6 +268,9 @@ title(sprintf('Frame interpolated at t = %g',grab_time));
 % resolution (i.e. t = [-1s,-0.7s,-0.4s...]) and one with 0.1s resolution
 % (i.e. t = [-1s,-0.9s,-0.8s...])
 
+
+% --- Operations on widefield SVD spatial components (U's)
+
 % In the same way that we can do linear operations in time on the V's
 % above, we can do linear operations in space on the U's. For example, if
 % we want to average pixels together in a region-of-interest (ROI), we can
@@ -303,6 +310,8 @@ roi_trace = ap.wf_roi(wf_U,wf_V,wf_avg,[],roi_mask);
 figure;plot(roi_trace);
 title('ROI fluorescence (with previous mask)');
 
+% --- Correlations in widefield data
+
 % This is also an interesting tool to play with: this gives a map of
 % correlations between a clicked pixel and all other pixels. Try clicking
 % around the brain to get a sense for the pattern of correlations, also you
@@ -325,12 +334,108 @@ ap.wf_corrviewer(wf_U,wf_V);
 % https://www.cell.com/cell/fulltext/S0092-8674(20)30402-5.
 % What regions do your divisions correspond to?
 
+%% Widefield preprocessing
 
-%%%% TO DO HERE: 
-% finished Andrada_wf_demo_1 equivalent, move on to 2
-% - interp and defining things by time (put this above, where they're doing
-% aligned averages?)
-% - preprocessing section (hemo, df/f, deconv)
+% The widefield data demoed above has had a few preprocessing steps beyond
+% SVD decomposition. Those will be explained here, in the reverse order in
+% which they're applied (to work backwards to raw data).
+
+% --- Deconvolution
+
+% Whenever a neuron has a spike (or more readily seen, a burst), calcium
+% indicators have a fast rise and then a slow decay. The rise corresponds
+% to the spike (note: not the peak, that's delayed from the spike), and the
+% slow decay corresponds to nothing - it's an artifact of the indicator.
+% This means that the raw fluorescence we see isn't really what we want: we
+% only care about the rise. (This is somewhat simplified, for example: if a
+% cell is constantly spiking and then stops, this will manifest as a
+% baseline fluorescence level which dips, so we care about that drop). The
+% fluorescent calcium indicator we primarily use is GCaMP6s. The "s" stands
+% for "slow", meaning it's even on the slower end of whats available (but
+% much brighter).
+
+% One non-fancy way to approximately get rid of these indicator artifacts
+% is to use the derivative of raw fluorescence - this will give us positive
+% values on fast rises, and small negative values (which we can ignore) on
+% the slow drops. A fancier way is with deconvolution. If we assume that
+% each spike produces a characteristic fluorescence rise/fall shape, then
+% the fluorescence trace is a convolution of the spike trace with that
+% fluorescence shape. We can then deconvolve this rise/fall shape out to
+% produce the original spike trace.
+
+% Here's a toy example of the relationship between spikes and fluorescence
+% that illustrates the convolution, run this code and zoom into the
+% right-hand plot to see the details:
+spike_trace = zeros(1000,1); % make an empty trace of spikes
+spike_trace(randi(1000,800,1)) = 1; % randomly place spikes
+spike_fluorescence = [linspace(0,1,3),linspace(1,0,20)]; % define the fluorescence shape for each spike
+fluorescence_trace = conv(spike_trace,spike_fluorescence); % convolve the spike trace with the fluorescence shape
+figure;
+subplot(1,4,1);
+plot(spike_fluorescence);
+title('Fluorescence shape for each spike');
+subplot(1,4,2:4); hold on;
+plot(spike_trace);
+plot(fluorescence_trace);
+legend({'Spikes','Fluorescence'});
+
+% [EXERCISE] 
+% It was mentioned above that taking the derivative is a decent
+% approximation for deconvolution. From the above example, plot
+% 'spike_trace' with the derivative of 'fluorescence_trace' to see how they
+% compare to each other. 
+
+% Deconvolution requires knowing the characteristic fluorescence shape (aka
+% "kernel") for each spike. We derived this data from simultaneous imaging
+% and electrophysiology, and finding the best kernel to translate
+% fluorescence into multiunit spiking (Peters et al. 2021, Extended Data
+% Fig. 4a-b: https://www.nature.com/articles/s41586-020-03166-8/figures/9).
+
+% We apply that deconvolution kernel with the function 'ap.wf_deconv'.
+% Because deconvolution is a linear operation, it can be done directly on
+% the V's from SVD. In the loaded example dataset, non-deconvolved data is
+% stored as 'wf_Vdf';
+
+% [EXERCISE] 
+% 1) Reconstruct pixels from non-deconvolved ('wf_Vdf') and deconvolved
+% ('wf_V') from frames 150-300. Normalize the values in each movie (e.g.
+% make the range of values from 0-1, because they have very different
+% scales), horizontally concatenate the movies, and scroll through them
+% with 'ap.imscroll'. What features are different between non-deconvolved
+% and deconvolved fluorescence?
+%
+% 2) In the previous section, you made stimulus-triggered average widefield
+% movies. Do that again with with stimulus X = -90 using non-deconvolved
+% data, and compare to deconvolved data. There should be a region in the
+% visual cortex with responds to the stimulus - draw an ROI over this
+% region for non-deconvolved and deconvolved data, and plot those traces
+% (normalized to have similar ranges) on top of each other. (One easy way to
+% draw an ROI on a movie and get the associated trace: view a
+% movie with 'ap.imscroll' and press 'r' on the figure, which lets you draw a
+% polygon. After completing and double-clicking the polygon, the structure
+% 'roi' will be saved in the workspace, which includes fields roi.trace
+% (the average values within the ROI) and roi.mask (the binary mask for
+% your ROI)). 
+
+% --- Normalization (dF/F)
+
+
+
+% --- Hemodynamic correction
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
