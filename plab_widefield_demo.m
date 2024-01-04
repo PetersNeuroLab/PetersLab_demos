@@ -422,34 +422,84 @@ legend({'Spikes','Fluorescence'});
 % Absolute values of fluorescence don't have any intrinsic information. For
 % example: if we have our LED dim one day and bright the next, the
 % fluorescence brightness will change, but this is unrelated to activity.
-% Similarly, if area 1 has more GCaMP than area 2, it may be
-% brighter, but this is not because is
+% Similarly, if area 1 has more GCaMP than area 2, it will be brighter, but
+% this is not because it is more active. Instead, only relative values
+% carry information about activity, specifically: how does fluorecence
+% change relative to "baseline"? We therefore want to "normalize" the
+% fluorescence in each pixel to its baseline.
 
-wf_Vdf = plab.wf.svd_dff(wf_U_raw{1},V_neuro_hemocorr,wf_avg_all{1});
+% The standard way to normalize fluorescence is as the difference between
+% measured fluorescence (F) and baseline fluorescence (F_0), divided by
+% F_0, = (F-F_0)/F_0, = ΔF/F_0. Our resulting units then are "fractions of
+% baseline fluorescence": at baseline = 0, double baseline = 1, half
+% baseline = -1.
 
-a = plab.wf.svd2px(wf_U,wf_Vdf(:,150:300));
-b = plab.wf.svd2px(wf_U,V_neuro_hemocorr(:,150:300));
+% What we consider "baseline" can vary - ideally it's when there's "nothing
+% happening", but we just use the average fluorescence across the day as a
+% reasonable and easy reference. Have a look at the average image in
+% pseudocolor to highlight differences, you can see that there's a range of
+% brightness across the brain:
+figure;
+imagesc(wf_avg);
+axis image;
+colormap(hsv);
 
-a1 = mat2gray(a);
-b1 = mat2gray(b);
-ap.imscroll([a1,b1]);
+% [EXERCISE] 
+% Normalized data is loaded as 'wf_Vdf', and non-normalized data is loaded
+% as 'V_neuro_hemocorr'. Reconstruct frames 580-600 from non-normalized and
+% normalized data and view the movies - there should be a spots of activity
+% in the lower left (visual cortex) and center left (motor cortex). Get
+% activity in ROIs over those areas for both non-normalized and normalized
+% data. Make two plots with overlaid visual/motor traces: one for
+% non-normalized data, and one with normalized data. What's the difference
+% between these plots? Why is that difference present?
 
 % --- Hemodynamic correction
 
+% Blood in the brain introduces an artifact in our imaging: blood is routed
+% to active areas, which obscures the fluorescence and darkens the signal.
+% This is generally slow (starts ~0.5s after activity and can last ~2s),
+% and is almost removed just by deconvolution (which pulls out only fast
+% components), but we still want to remove this artifact to have more
+% accurate data.
+
+% The technique to remove this artifact is to use two excitation lights,
+% blue and violet, to trigger light emission from GCaMP in different ways.
+% When GCaMP is excited by blue light, it emits more photons if it's bound
+% to calcium than if it's not (which is why we get activity-dependent
+% fluorescence). When GCaMP is excited by violet light, it emits the same
+% amount of photos regardless of whether it's bound to calcium or not (so
+% the violet-excited GCaMP signal is activity-independent).
+
+% We then have activity-dependent (blue) and activity-independent (violet)
+% signals, both of which are sometimes dimmed by blood. If we properly
+% scale the violet signal and subtract it from the blue signal, we then
+% remove the blood (hemodynamic) effect, leaving just the activity effect.
+
+% This is corrected in the loading script, but we can still look at these
+% components separately. So far, you've been using the
+% hemodynamically-corrected data (Udf, fVdf), where the uncorrected
+% versions are in:
+% blue (activity): Un, fVn (n for 'neural')
+% violet (hemodynamic): Uh, fVh (h for 'hemodynamic');
+
+% [EXERCISE] 
+% Non-hemodynamic-corrected (raw) data is loaded as 'wf_V_raw{1}'. As
+% before, make a stimulus-triggered widefield movie for stimulus X = -90
+% spanning -0.5s:+4s, for both raw data and hemodynamic-corrected data
+% ('V_neuro_hemocorr'). Draw an ROI over the responsive areas in both
+% movies and plot the traces for both ROIs together on one plot. What are
+% the differences between the traces?
 
 
+%% Sections to add: 
+% Andrada_wf_demo_3
+% movement (wheel trace, discretize velocity?)
+% retinotopy
 
-
-
-
-
-
-
-
-
-
-
-
+% Andrada_wf_demo_4
+% alignment across days
+% converting into master U
 
 
 

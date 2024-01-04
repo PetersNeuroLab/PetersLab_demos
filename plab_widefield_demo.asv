@@ -419,21 +419,80 @@ legend({'Spikes','Fluorescence'});
 
 % --- Normalization (dF/F)
 
-% Absolute values of fluorescence don't have any intrinsic information, for
-% example: if we have our LED 
+% Absolute values of fluorescence don't have any intrinsic information. For
+% example: if we have our LED dim one day and bright the next, the
+% fluorescence brightness will change, but this is unrelated to activity.
+% Similarly, if area 1 has more GCaMP than area 2, it will be brighter, but
+% this is not because it is more active. Instead, only relative values
+% carry information about activity, specifically: how does fluorecence
+% change relative to "baseline"? We therefore want to "normalize" the
+% fluorescence in each pixel to its baseline.
 
-wf_Vdf = plab.wf.svd_dff(wf_U_raw{1},V_neuro_hemocorr,wf_avg_all{1});
+% The standard way to normalize fluorescence is as the difference between
+% measured fluorescence (F) and baseline fluorescence (F_0), divided by
+% F_0, = (F-F_0)/F_0, = ΔF/F_0. Our resulting units then are "fractions of
+% baseline fluorescence": at baseline = 0, double baseline = 1, half
+% baseline = -1.
 
-a = plab.wf.svd2px(wf_U,wf_Vdf(:,150:300));
-b = plab.wf.svd2px(wf_U,V_neuro_hemocorr(:,150:300));
+% What we consider "baseline" can vary - ideally it's when there's "nothing
+% happening", but we just use the average fluorescence across the day as a
+% reasonable and easy reference. Have a look at the average image in
+% pseudocolor to highlight differences, you can see that there's a range of
+% brightness across the brain:
+figure;
+imagesc(wf_avg);
+axis image;
+colormap(hsv);
 
-a1 = mat2gray(a);
-b1 = mat2gray(b);
-ap.imscroll([a1,b1]);
+% [EXERCISE] 
+% Normalized data is loaded as 'wf_Vdf', and non-normalized data is loaded
+% as 'V_neuro_hemocorr'. Reconstruct frames 580-600 from non-normalized and
+% normalized data and view the movies - there should be a spots of activity
+% in the lower left (visual cortex) and center left (motor cortex). Get
+% activity in ROIs over those areas for both non-normalized and normalized
+% data. Make two plots with overlaid visual/motor traces: one for
+% non-normalized data, and one with normalized data. What's the difference
+% between these plots? Why is that difference present?
 
 % --- Hemodynamic correction
 
+% Blood in the brain introduces an artifact in our imaging: blood is routed
+% to active areas, which obscures the fluorescence and darkens the signal.
+% This is generally slow (starts ~0.5s after activity and can last ~2s),
+% and is almost removed just by deconvolution (which only pulls out fast
+% signals), but we still want to remove this artifact to have more accurate
+% data.
 
+% The technique to remove this artifact is to use two excitation lights,
+% blue and violet, to trigger light emission from GCaMP in different ways.
+% When GCaMP is excited by blue light, it Blue light excites in amounts GCaMP differently depending
+
+% Our imaging is done with fluorescence, excitation light of one wavelength
+% (blue or violet) triggers light emission from GCaMP in a different
+% wavelength (green). We use two different excitation colors because they
+% each excite GCaMP in a different way: blue excites GCaMP differently
+% depending on whether it's bound to calcium (bright with calcium, dark
+% without calcium), and violet excites GCaMP the same regardless of whether
+% it's bound to calcium. 
+
+% The reason this is useful is to counteract hemodynamic effects: when an
+% area is active, blood comes into that area, which occludes our GCaMP
+% fluorescence. We want to have a separate measure of these hemodynamic
+% effects (how much light is the blood blocking?) so that we can 'correct'
+% our activity for any effects from blood that we don't want to measure.
+
+% This is corrected in the loading script, but we can still look at these
+% components separately. So far, you've been using the
+% hemodynamically-corrected data (Udf, fVdf), where the uncorrected
+% versions are in:
+% blue (activity): Un, fVn (n for 'neural')
+% violet (hemodynamic): Uh, fVh (h for 'hemodynamic');
+
+% EXERCISE: Make a stimulus-triggered average movie of fluorescence from
+% blue light (activity) and from violet light (hemodynamics). Plot
+% stimulus-triggered average activity in V1 for both activity and
+% hemodynamics. What are the main features of these plots, and why do they
+% happen?
 
 
 
