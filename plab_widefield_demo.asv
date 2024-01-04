@@ -349,7 +349,10 @@ ap.wf_corrviewer(wf_U,wf_V);
 % This means that the raw fluorescence we see isn't really what we want: we
 % only care about the rise. (This is somewhat simplified, for example: if a
 % cell is constantly spiking and then stops, this will manifest as a
-% baseline fluorescence level which dips, so we care about that drop).
+% baseline fluorescence level which dips, so we care about that drop). The
+% fluorescent calcium indicator we primarily use is GCaMP6s. The "s" stands
+% for "slow", meaning it's even on the slower end of whats available (but
+% much brighter).
 
 % One non-fancy way to approximately get rid of these indicator artifacts
 % is to use the derivative of raw fluorescence - this will give us positive
@@ -402,24 +405,31 @@ legend({'Spikes','Fluorescence'});
 % and deconvolved fluorescence?
 %
 % 2) In the previous section, you made stimulus-triggered average widefield
-% movies. Do that again with non-deconvolved data, and compare to
-% deconvolved data. 
-
-
-
-% Taking a step backwards on our data, the non
-
-% The fluorescent calcium indicator we primarily
-% use is GCaMP6s. The "s" stands for "slow", meaning it's even on the
-% slower end of whats available (but much brighter). However, even faster
-% indicators are much slower than action potentials, so the timing of
-% fluorescence will always be off relative to the timing of action
-% potentials
-
+% movies. Do that again with with stimulus X = -90 using non-deconvolved
+% data, and compare to deconvolved data. There should be a region in the
+% visual cortex with responds to the stimulus - draw an ROI over this
+% region for non-deconvolved and deconvolved data, and plot those traces
+% (normalized to have similar ranges) on top of each other. (One easy way to
+% draw an ROI on a movie and get the associated trace: view a
+% movie with 'ap.imscroll' and press 'r' on the figure, which lets you draw a
+% polygon. After completing and double-clicking the polygon, the structure
+% 'roi' will be saved in the workspace, which includes fields roi.trace
+% (the average values within the ROI) and roi.mask (the binary mask for
+% your ROI)). 
 
 % --- Normalization (dF/F)
 
+% Absolute values of fluorescence don't have any intrinsic information, for
+% example: if we have our LED 
 
+wf_Vdf = plab.wf.svd_dff(wf_U_raw{1},V_neuro_hemocorr,wf_avg_all{1});
+
+a = plab.wf.svd2px(wf_U,wf_Vdf(:,150:300));
+b = plab.wf.svd2px(wf_U,V_neuro_hemocorr(:,150:300));
+
+a1 = mat2gray(a);
+b1 = mat2gray(b);
+ap.imscroll([a1,b1]);
 
 % --- Hemodynamic correction
 

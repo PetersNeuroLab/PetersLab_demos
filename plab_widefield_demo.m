@@ -419,7 +419,20 @@ legend({'Spikes','Fluorescence'});
 
 % --- Normalization (dF/F)
 
+% Absolute values of fluorescence don't have any intrinsic information. For
+% example: if we have our LED dim one day and bright the next, the
+% fluorescence brightness will change, but this is unrelated to activity.
+% Similarly, if area 1 has more GCaMP than area 2, it may be
+% brighter, but this is not because is
 
+wf_Vdf = plab.wf.svd_dff(wf_U_raw{1},V_neuro_hemocorr,wf_avg_all{1});
+
+a = plab.wf.svd2px(wf_U,wf_Vdf(:,150:300));
+b = plab.wf.svd2px(wf_U,V_neuro_hemocorr(:,150:300));
+
+a1 = mat2gray(a);
+b1 = mat2gray(b);
+ap.imscroll([a1,b1]);
 
 % --- Hemodynamic correction
 
