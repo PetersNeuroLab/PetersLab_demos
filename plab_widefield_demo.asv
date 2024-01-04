@@ -479,13 +479,11 @@ ap.load_recording;
 % --- Regional correlations in widefield data
 
 % Our widefield images span the whole dorsal sorface of the brain. To get a
-% feel for how areas are arranged, it can be useful to look at correlations
-% between pixels, which reveals r
-
-% This is also an interesting tool to play with: this gives a map of
+% feel for where areas are, it can be useful to look at correlations
+% between pixels. This is a tool to explore that: it gives a map of
 % correlations between a clicked pixel and all other pixels. Try clicking
 % around the brain to get a sense for the pattern of correlations, also you
-% can press 'h' to enable 'hover mode' that follows your cursor: 
+% can press 'h' to enable 'hover mode' that follows your cursor:
 ap.wf_corrviewer(wf_U,wf_V);
 
 % [EXERCISE] 
@@ -504,14 +502,71 @@ ap.wf_corrviewer(wf_U,wf_V);
 % https://www.cell.com/cell/fulltext/S0092-8674(20)30402-5.
 % What regions do your divisions correspond to?
 
+% --- Regional activity during events
+
+% In the loaded dataset, the mouse is performing a task where a stimulus
+% is presented on the right-hand screen, then moving the wheel brings the
+% stimulus to the center to trigger a sucrose reward. 
+
+% This means there are three main things that happen in this task: 
+% 1) the stimulus comes on (with the time stored in 'stimOn_times')
+% 2) the movement starts (the first movement after the stimulus can be
+% found using the 'wheel_move' variable mentioned in 'plab_data_demo')
+% 3) the reward is delivered and consumed (reward delivery times are stored
+% in the variable 'reward_times')
+
+% [EXERCISE] 
+% 1) Make three event-triggered averages of widefield activity for each of
+% the 3 events above: stimulus onset, onset of movement after the stimulus
+% is presented, reward delivery. Comparing these movies to the mouse atlas,
+% which region are active during these events?
+%
+% 2) The "reaction time" (defined here as the time from stimulus onset to
+% movement) varies on each trial. Plot the activity in the visual cortex
+% and motor cortex on each trial, sorted by reaction time, by following
+% these steps. First, get the activity in an ROI over the visual and motor
+% cortex. Next, align data from each ROI to stimulus onsets. Calculate the
+% reaction time for each trial, then plot a heatmap (using 'imagesc') of
+% the data from each ROI, with time on the x-axis and trial sorted by
+% reaction time on the x-axis. Draw a line at t = 0 for reference, and
+% another at the movement onset time (note this will be different for each
+% trial). What do these plots show about alignment of activity to these
+% events?
+
+% --- Retinotopy of visual areas
+% Load this data for the following section: 
+animal = 'AP010';
+rec_day = '2023-08-09';
+rec_time = '1736';
+verbose = true;
+ap.load_recording;
+
+% Visual regions of the cortex can be mapped by showing small squares
+% across the screen in a sparse, uncorrelated pattern ("sparse noise"), and
+% finding which places on the cortex respond to squares at each position.
+
+% Each visual region has a characteristic "visual field sign", which is the
+% orientation of the visual representation with response to the world: a
+% positive sign means the orientation is the same as the world (up on the
+% screen is anterior in the brain, right on the screen is right on the
+% brain), a negative sign means the orientation is the mirror of the world
+% (up on the screen is posterior on the brain, right on the screen is left
+% on the brain)
+
+% We can also use visual field sign to align our widefield images to the
+% mouse atlas (Allen Common Coordinate Framework, or "CCF")
+
+% The data loaded above is from this sparse noise presentation. Run the
+% following command to process the data and determine visual field sign.
+% This produces three plots: 1) the visual field sign map, 2) 
+ap.wf_retinotopy
 
 
 
 %% Sections to add: 
 % Andrada_wf_demo_3
-% movement (wheel trace, discretize velocity?)
-% retinotopy
 
+% retinotopy
 % Andrada_wf_demo_4
 % alignment across days
 % converting into master U
