@@ -1,6 +1,6 @@
 These are demo scripts to learn how to work with lab infrastructure and data. 
 
-Start with plab_data_demo, then move on to demos relevant to your project. If directions are unclear, ask Andy - these demos are a work in progress.
+Start with `plab_data_demo`, then move on to demos relevant to your project. If directions are unclear, ask Andy - these demos are a work in progress.
 
 When you finish a section or demo, go over the code with Andy.
 
