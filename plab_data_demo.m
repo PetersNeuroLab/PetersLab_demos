@@ -1,7 +1,7 @@
 %% Data demo
 %
 % A demo on how to use the server and load data
-% Whenever you see a line of code, run it and continue reading
+% Whenever you see a line of code, run it (highlight and press F9) and continue reading
 % [EXERCISE] marks a section with instructions to complete
 
 %% Github repositories to download
