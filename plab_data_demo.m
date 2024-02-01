@@ -6,10 +6,12 @@
 
 %% Github repositories to download
 
-% Clone these repos and add to the Matlab path (Home > Set Path > Add with
-% Subfolders...)
+% Clone these repos and add to the Matlab path 
+% (Home > Set Path > Add with Subfolders...)
+%
 % https://github.com/PetersNeuroLab/PetersLab_analysis
 % https://github.com/petersaj/AP_scripts_peterslab
+% https://github.com/kwikteam/npy-matlab
 
 %% File structure and finding recordings
 
@@ -115,7 +117,7 @@ plab.locations.server_data_path
 plab.locations.local_data_path
 
 % [EXERCISE]
-% Use the function 'fullfile' and the above information to generate the
+% Use the function 'fullfile' and the above information to construct the
 % path: server/Users/(your name)/test_path
 
 % --- Recording locations
@@ -198,9 +200,10 @@ title('Photodiode signal');
 
 % [EXERCISE] 
 % 1) Write code to identify the channel number for 'widefield_camera'
-% (widefield camera exposures) and plot the data for that channel.
+% (widefield camera exposures) and plot the data for that channel with
+% timestamps on the x-axis
 % 2) Find the timestamps when the widefield camera starts each exposure
-% (times when the signal flips from low to high). 
+% (first sample when the exposure signal is high after being low)
 % 3) Check that the timestamps in 2 match the variable
 % 'widefield_expose_times' (this is created in ap.load_recording)
 

@@ -8,8 +8,10 @@
 %% Github repositories to download
 
 % These repositories are necessary for this demo:
+%
 % https://github.com/PetersNeuroLab/PetersLab_analysis
 % https://github.com/petersaj/AP_scripts_peterslab
+% https://github.com/kwikteam/npy-matlab
 
 %% Example dataset
 
