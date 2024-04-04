@@ -1,4 +1,4 @@
-%% Widefield demo
+%% Widefield demo 1
 %
 % A demo on how to work with widefield data
 % (do plab_data_demo first)
@@ -536,12 +536,6 @@ ap.wf_corrviewer(wf_U,wf_V);
 % events?
 
 % --- Retinotopy of visual areas
-% Load this data for the following section: 
-animal = 'AP010';
-rec_day = '2023-08-09';
-rec_time = '1736';
-verbose = true;
-ap.load_recording;
 
 % Visual regions of the cortex can be mapped by showing small squares
 % across the screen in a sparse, uncorrelated pattern ("sparse noise"), and
@@ -559,12 +553,13 @@ ap.load_recording;
 % mouse atlas (Allen Common Coordinate Framework, or "CCF"), because we
 % know where the regions should be and what sign they should have.
 
-% The data loaded above is from this sparse noise presentation. Run the
-% following command to process the data and determine visual field sign.
-% This produces three plots: 1) the visual field sign map, 2) the visual
-% field sign map and average widefield images with CCF overlay, 2) the
-% average image with visual field sign overlaid.
-ap.wf_retinotopy
+% The function 'plab.wf.retinotopy_vfs' loads data for a recording and
+% calculates the visual field sign (vfs). Run the following command to get
+% and plot the vfs for an example recording: 
+animal = 'AP010';
+rec_day = '2023-08-09';
+rec_time = '1736';
+vfs = plab.wf.retinotopy_vfs(animal,rec_day,rec_time);
 
 % [EXERCISE]
 % Compare the regions from the visual field sign to the pixel correlation
