@@ -530,7 +530,7 @@ ap.wf_corrviewer(wf_U,wf_V);
 % cortex. Next, align data from each ROI to stimulus onsets. Calculate the
 % reaction time for each trial, then plot a heatmap (using 'imagesc') of
 % the data from each ROI, with time on the x-axis and trial sorted by
-% reaction time on the x-axis. Draw a line at t = 0 for reference, and
+% reaction time on the y-axis. Draw a line at t = 0 for reference, and
 % another at the movement onset time (note this will be different for each
 % trial). What do these plots show about alignment of activity to these
 % events?
