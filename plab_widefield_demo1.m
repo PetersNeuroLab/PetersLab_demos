@@ -568,6 +568,14 @@ vfs = plab.wf.retinotopy_vfs(animal,rec_day,rec_time);
 % visual field sign map - how does the visual field sign show up in the
 % pattern of correlations?
 
+%% Next demo
+
+% To learn how to align data across days and animals (e.g. to look for
+% changes across days, to average across animals), move on to
+% plab_widefield_demo2
+
+
+
 
 
 
