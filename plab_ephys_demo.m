@@ -59,15 +59,16 @@
 
 %% Example dataset
 
-% Run these lines to load example data for the following sections: 
+% Run these lines to load example data for the following sections
+% This data contains units from the visual cortex (as well as underlying
+% hippocampus).
+
 animal = 'AP003';
 rec_day = '2023-06-07';
 rec_time = '1542';
 verbose = true;
 ap.load_recording;
 
-
-% (alt time: 1526)
 
 %% Templates
 
@@ -317,12 +318,115 @@ ylabel('Spikes/s');
 % 
 % Let's calculate the PSTH for an example neuron to stimuli in the right
 % screen: 
+
+% Using Bonsai events, we get the X (azimuth) stimulus positions:
 stim_x = vertcat(trial_events.values.TrialStimX);
 
+% Using Timelite, find the stim times when x = +90 (right screen)
+right_stim_times = stimOn_times(stim_x == 90);
 
-%%%%%%%% WORKING HERE
+% Create time bins with a certain width around each stim
+% (define bin size in seconds)
+bin_size = 0.001; 
+% (define the start and end of the window, in seconds)
+psth_window = [-0.5,1];
+% (define the relative bins for the PSTH, edges and centers (to plot))
+psth_bins = psth_window(1):bin_size:psth_window(2); 
+psth_bin_centers = psth_bins(1:end-1)+ diff(psth_bins)/2;
+% (get the bins around every stim: stim is on dim 1, bin is on dim 2)
+stim_bins = right_stim_times + psth_bins; 
 
-% stats for pre/post? bins without psth
+% (select a unit, loop through each stimulus, bin the spikes)
+use_unit = 180;
+use_unit_spikes = spike_times_timelite(spike_templates == use_unit);
+
+unit_psth = nan(length(right_stim_times),length(psth_bins)-1);
+for curr_trial = 1:length(right_stim_times)
+    % (get the binned spikes for this trial, divide by the bin size to get
+    % spike rate)
+    unit_psth(curr_trial,:) = ...
+        histcounts(use_unit_spikes,stim_bins(curr_trial,:))/bin_size;
+end
+
+% The bin size is currently very small: 1ms, so small that each bin has
+% either 0 or 1 spikes. If we plot the PSTH now, it will have high temporal
+% precision, but it will look messy: 
+figure;
+plot(psth_bin_centers,mean(unit_psth));
+xlabel('Time from stim');
+ylabel('Spikes / s')
+xline(0,'r');
+title(sprintf('Unit %d: PSTH to right stim',use_unit));
+
+% To clean this up, one thing we can do is apply a gaussian filter to
+% smooth our data, which loses some temporal precision but provides a more
+% easily interpretable plot. There are a few ways to apply a gaussian
+% filter, this way uses the function 'smoothdata', and shows the effect of
+% smoothing with different sized windows:
+figure; hold on
+smooth_windows = 1:20:100;
+for curr_window = 1:length(smooth_windows)
+    plot(psth_bin_centers,smoothdata(mean(unit_psth), ...
+        'gaussian',smooth_windows(curr_window)));
+end
+xlabel('Time from stim');
+ylabel('Spikes / s')
+xline(0,'linewidth',2)
+title(sprintf('Unit %d: PSTH to right stim',use_unit));
+legend(cellfun(@(x) sprintf('Smoothing window: %d',x), ...
+    num2cell(smooth_windows),'uni',false));
+
+% Try zooming into the plot and noticing the differences between the
+% different smoothing windows, particularly the trade-off between
+% smoothness and temporal precision. Which value do you think works best?
+
+% [EXERCISE] 
+% In the above example, we had very small bins (1 ms), which we then
+% smoothed. How does this compare to just using large bins and not
+% smoothing? In other words, what's the difference between 1 ms bins
+% smoothed with a 30ms window, vs. just using 30ms bins? Try comparing
+% PSTHs with this difference using 10,20, and 50 ms windows
+
+% [EXERCISE] 
+% The above example used a for loop to bin spikes for each trial. Try
+% binning spikes for each stimulus using the function 'arrayfun', which can
+% act as a one-line for loop. 
+
+%% Determining responsive cells
+
+% We often want to extract cells that do something we're interested in. For
+% example, in this case, we may want to pull out cells that respond to the
+% visual stimulus for further analysis. 
+
+% There are many ways to do this, which vary in their sensitivity and
+% features they emphasize. One method is to compare a "baseline" time to an
+% "event" time, and choose cells which are significantly more active during
+% the event compared to baseline.
+
+% [EXERCISE] 
+% Find units that are responsive to right-side stimuli in these steps: 
+%
+% 1) For each unit, count the number of spikes 150ms before each stimulus
+% (baseline) and 150ms after each stimulus (event). Store these counts in a
+% matrix which is size units x 2 [baseline,event] x stimulus. 
+%
+% 2) For each unit, do a Wilcoxon signed rank test ('signrank' function) to
+% get a p value comparing the baseline spikes to the event spikes. 
+%
+% 3) Define "responsive" units as having p < 0.05 from the test above
+%
+% 4) Create an average PSTH around the stimulus for all units
+%
+% 5) Create a heatmap of PSTHs for responsive units, and another for
+% non-responsive units
+
+
+
+
+
+
+%% PSTH viewer
+
 
 
 
