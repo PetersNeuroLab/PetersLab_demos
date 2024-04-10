@@ -1,4 +1,4 @@
-%% Electrophysiology demo
+%% Electrophysiology demo 1
 %
 % A demo on how to work with electrophysiology data
 % (do plab_data_demo first)
@@ -151,24 +151,10 @@ ylabel('Depth (/mum)');
 % quality control is not perfect - we are detecting "spikes" that are not
 % actually neurons.
 
-% [EXERCISE] 
-% One defining feature of a unit is the "width" of the waveform, which is
-% the time between the trough (lowest point) to the next peak (highest
-% point). Calculate and plot the width of each waveform in microseconds
-% (using the fact that the sample rate is 30kHz).
-%
-% The load script ap.load_ephys calculates this aready as
-% 'templateDuration_us'. Check that your calculation matches this.
-%
-% Plot a histogram of the waveform widths, using bins 0:100:1000. Do you
-% notice a pattern? Do you know why this happens? 
-
-
 % In summary, here are the relevant template variables: 
 % - templates
 % - template_depths
 % - waveforms
-% - templateDuration_us
 
 
 %% Spikes
@@ -392,6 +378,7 @@ legend(cellfun(@(x) sprintf('Smoothing window: %d',x), ...
 % binning spikes for each stimulus using the function 'arrayfun', which can
 % act as a one-line for loop. 
 
+
 %% Determining responsive cells
 
 % We often want to extract cells that do something we're interested in. For
@@ -406,48 +393,123 @@ legend(cellfun(@(x) sprintf('Smoothing window: %d',x), ...
 % [EXERCISE] 
 % Find units that are responsive to right-side stimuli in these steps: 
 %
-% 1) For each unit, count the number of spikes 150ms before each stimulus
-% (baseline) and 150ms after each stimulus (event). Store these counts in a
-% matrix which is size units x 2 [baseline,event] x stimulus. 
+% 1) For each unit, count the number of spikes (histogram with one bin)
+% 150ms before each stimulus (baseline) and 150ms after each stimulus
+% (event). Store these counts in a matrix which is size units x 2
+% [baseline,event] x stimulus.
 %
 % 2) For each unit, do a Wilcoxon signed rank test ('signrank' function) to
-% get a p value comparing the baseline spikes to the event spikes. 
+% get a p value comparing the baseline spikes to the event spikes.
 %
 % 3) Define "responsive" units as having p < 0.05 from the test above
 %
-% 4) Create an average PSTH around the stimulus for all 
+% 4) Create an average PSTH around the stimulus for all units
+%
+% 5) Create a heatmap of PSTHs for responsive units, and another for
+% non-responsive units
+%
+% 6) The above PSTHs may have a lot of variability due to baseline firing
+% rates. We don't care much about baseline firing rates here, instead, we
+% care about relative firing rates (e.g. when the stim came on, the spike
+% rate doubled). Try normalizing the PSTHs by defining a baseline firing
+% rate for each unit (maybe averaging 200ms before stim onset). Then
+% calculate the normalized firing rate by subtracting and dividing by the
+% baseline as normalized_rate = (rate-baseline_rate)/baseline_rate. Plot
+% the heatmap of these noramlized PSTHs - what's the difference with the
+% non-normalized version? What are the units for this plot (e.g. what does
+% "2" mean)?
 
-
-
-
-pre_bins = right_stim_times + [-0.15,0];
-post_bins = right_stim_times + [0,0.15];
-
-m = nan(length(right_stim_times),2,size(templates,1));
-for curr_unit = 1:size(templates,1)
-    m(:,1,curr_unit) = arrayfun(@(x) histcounts( ...
-        spike_times_timelite(spike_templates == curr_unit),pre_bins(x,:)), ...
-        1:length(right_stim_times));
-
-    m(:,2,curr_unit) = arrayfun(@(x) histcounts( ...
-        spike_times_timelite(spike_templates == curr_unit),post_bins(x,:)), ...
-        1:length(right_stim_times));
-end
-
-p = nan(size(templates,1),1);
-for curr_unit = 1:size(templates,1)
-    p(curr_unit) = signrank(m(:,1,curr_unit),m(:,2,curr_unit));
-end
-
-
-
-%%%%%%%% WORKING HERE
-
-% stats for pre/post? bins without psth
 
 %% PSTH viewer
 
+% I have a tool for viewing PSTHs: 'ap.cellraster'. This function pulls
+% certain variables from the workspace (e.g. spike times, templates,
+% depth), so data first has to be loaded in using the conventions in
+% 'ap.load_ephys' (which is called by 'ap.load_experiment'). In other words
+% - if you don't load data with 'ap.load_experiment', you may get an error
+% about missing variables. 
 
+% 'ap.cellraster' takes two inputs: 
+% align_times - times of events to align (this can be a vector, e.g.
+% stimulus times, or a cell array, e.g. cell 1 = stimulus times, cell 2 =
+% reward times)
+%
+% align_groups - categories of entries in 'align_times' (e.g. if there are
+% two alternating stimuli displayed 0.5s apart, the 'align_times' may be
+% [0,0.5,1,1.5] and the 'align_groups' would be [1,2,1,2]).
+
+% Here is an example usage to align activity to stimuli, using stimulus
+% onset times as the alignment times, and stimulus azimuth as the grouping:
+stim_x = vertcat(trial_events.values.TrialStimX);
+ap.cellraster(stimOn_times,stim_x);
+
+% Here's a desription of the interface: 
+% - left plot: a dot for each template, with depth
+% on the y-axis and normalized rate on the x-axis (highest firing rate
+% cells are on the right, lowest are on the left). 
+%
+% - center plot: waveforms of the template on a selection of channels
+% (channels with the largest amplitude)
+%
+% - right plot: top is the PSTH, bottom is a raster plot (one dot for each
+% spike, time on the x-axis, trial on the y-axis)
+%
+% - bottom plot: template amplitude across time (this is used to see if a
+% unit drifts in or out of the recording over time, which can happen with
+% subtle movement of the probe/brain). 
+
+% [EXERCISE] 
+% Try using the main functions of cellraster: 
+% - click on dots in the left plot - this selects a unit to plot
+% 
+% - press space bar: this toggles between plotting all events, vs.
+% grouping events by the grouping variable (in this case, stim azimuth).
+% The default colors are blue/black/red if the grouping variables have both
+% negative and positive numbers. In this case, the colors correspond to the
+% stimulus positions blue = -90 (left), black = 0 (center), red = 90
+% (right). What's the difference between these groups? Why?
+%
+% - press the up/down keys: this cycles through templates by depth
+%
+% - press 'm' (for 'multiunit'), and click on the left plot around depth
+% 1500 and then again around depth 2500: this feature groups the spikes of
+% all units within the selected depth. Since there are too many spikes to
+% display in a coherent raster, the raster plot turns into a heatmap.
+%
+% - press 'u' (for 'unit'), and enter 152: This goes to unit 152. 
+%
+% press 't' (for 'time'), and enter [-0.1,0.5]: this changes the displayed
+% time of the PSTH and raster (the default when you open is [-0.5,2]). 
+
+
+% [EXERCISE] 
+% Try calling 'ap.cellraster' with a second grouping variable. Even though
+% the loaded recording was a passive protocol, the mouse did move the wheel
+% occasionally.
+%
+% First, get the times at the start of each movement (use the
+% 'wheel_move' variable). 
+%
+% Second, find the duration for each movement (offset time - onset time).
+% Get the sort index of movement durations (e.g. the shortest movement is
+% 1, the next shortest movemnet is 2). We'll use this as our grouping
+% variable (which doesn't have to be categorical groups - it can also be a
+% sorting).
+%
+% Call 'ap.cellraster' with a cell array for align times and grouping
+% variables: the first cell should have the stim times and groups used
+% above, the second cell should have movement times and sort index.
+%
+% Use 'm' (multiunit mode) to select the visual cortex, which is depth
+% ~1500-2500. Press right/left to toggle between alignments (note at the
+% top of the right plots, it switches betwen "Align 1" and "Align 2", which
+% is just the order of alignments put into the function). On Align 2
+% (movement), press space bar, which will sort the trials by movement time
+% (note the y-axis of the heatmap switches between "Trial" and "Sorted
+% trial"). 
+%
+% This is visual cortex - what do you notice about responses during visual
+% stimuli vs. movement?
 
 
 %% Planning trajectories and estimating live probe location
@@ -506,22 +568,14 @@ neuropixels_trajectory_explorer
 % on a browser here:
 % https://data.virtualbrainlab.org/Pinpoint/
 %
-% Feel free to play around with that program, and see which one you like
+% If you like, play around with that program, and see which one you like
 % better / what the pros and cons are. Since that program is the focus of
-% someone in their lab, it might replace the NTE some day. 
+% someone in their lab, it might replace the NTE some day.
 
+%% Next demo
 
-%%
-% trajectory explorer
-% histology
-% autocorrelelogram?
-
-
-
-
-
-
-
+% To learn how to align electrophysilogical data to histology and determine
+% where your record was in the brain, stay tuned for the next demo.
 
 
 
