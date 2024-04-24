@@ -291,10 +291,7 @@ ap.load_recording;
 
 % [EXERCISE] 
 % This animal also had passive visual recordings the next day (2023-08-08).
-% Create stimulus-aligned master V's for both the first day (2023-08-07,
-% recording 1616) and the second day (2023-08-08, recording 1849). Average
-% these together, and make a movie of the average stimulus response across
-% these days.
+% Create stimulus-aligned m
 
 
 
