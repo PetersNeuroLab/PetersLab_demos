@@ -252,9 +252,10 @@ ap.imscroll(U_master);
 axis equal;
 
 % Now let's load an example recording:
-animal = 'AP010';
-rec_day = '2023-08-07';
-rec_time = '1616';
+animal = 'AP019';
+rec_day = '2024-04-07';
+recodings=plab.find_recordings(animal,rec_day)
+rec_time = '0957';
 verbose = true;
 ap.load_recording;
 
