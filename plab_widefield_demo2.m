@@ -297,6 +297,39 @@ ap.load_recording;
 % these days.
 
 
+%% Aligning and converting U's on loading
+
+% If you're using my function to load (ap.load_recording, which calls
+% ap.load_widefield to load and process the widefield data), this always
+% aligns the widefield data, if an alignment exists. 
+%
+% If you also want to convert the U's to the master Us, you can set a flag
+% to do that during loading. 
+%
+% The variable to set flags during loading is 'load_parts'. These two lines
+% set the widefield data to be loaded, and then set the widefield to be
+% converted to the master U's;
+load_parts = struct;
+load_parts.widefield = true;
+load_parts.widefield_master = true;
+
+% Now if you load the recording, the 'wf_U' and 'wf_V' variables will be
+% converted into the master U's. We can load the data from above, but this
+% time it will be aligned/converted during loading: 
+animal = 'AP010';
+rec_day = '2023-08-07';
+rec_time = '1616';
+verbose = true;
+ap.load_recording;
+
+
+
+
+
+
+
+
+
 
 
 
