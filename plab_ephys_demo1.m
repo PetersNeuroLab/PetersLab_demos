@@ -66,11 +66,6 @@
 animal = 'AP003';
 rec_day = '2023-06-07';
 rec_time = '1542';
-
-animal = 'AP019';
-rec_day = '2024-05-07';
-
-
 verbose = true;
 ap.load_recording;
 
@@ -194,7 +189,6 @@ use_template = 10;
 use_template_spike_n = sum(spike_templates == 10);
 fprintf('Template %d had %d spikes\n',use_template,use_template_spike_n);
 % 
-
 % Let's say we want to plot how many spikes occurred for this unit across
 % the recording: 
 use_spike_times = spike_times_timelite(spike_templates == use_template);
@@ -340,10 +334,6 @@ for curr_trial = 1:length(right_stim_times)
         histcounts(use_unit_spikes,stim_bins(curr_trial,:))/bin_size;
 end
 
-
-% all_counts = cell2mat(arrayfun(@(x) histcounts(use_unit_spikes, stim_bins(x,:)), (1:length(right_stim_times))', 'UniformOutput', false));
-
-
 % The bin size is currently very small: 1ms, so small that each bin has
 % either 0 or 1 spikes. If we plot the PSTH now, it will have high temporal
 % precision, but it will look messy: 
@@ -451,9 +441,6 @@ legend(cellfun(@(x) sprintf('Smoothing window: %d',x), ...
 % Here is an example usage to align activity to stimuli, using stimulus
 % onset times as the alignment times, and stimulus azimuth as the grouping:
 stim_x = vertcat(trial_events.values.TrialStimX);
-
-stim_x = vertcat(trial_events.values.StimFrequence);
-
 ap.cellraster(stimOn_times,stim_x);
 
 % Here's a desription of the interface: 
