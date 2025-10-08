@@ -574,7 +574,7 @@ neuropixels_trajectory_explorer
 
 %% Next demo
 
-% To learn how to align electrophysilogical data to histology and determine
+% To learn how to align electrophysiological data to histology and determine
 % where your record was in the brain, stay tuned for the next demo.
 
 
