@@ -35,7 +35,7 @@
 % |  |- recording time (Recording_HHMM, e.g. Recording_1021 started at 10:21am)
 % |  | |- recording data by modality (e.g. mousecam, widefield)
 % |  |- day data spanning multiple recordings (e.g. ephys, widefield)
-% |- non-recording data (e.g. histology)
+% | |- non-recording data (e.g. histology)
 
 
 %% Finding data from recordings
