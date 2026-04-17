@@ -305,21 +305,23 @@ cvfold = 5; % split the data into this many train/test segments
 [kernels,~,explained_variance] = ...
     ap.regresskernel(activity,events,time_shifts,lambda,cvfold,[],[],use_constant);
 
-% The explained_variance has two fields: .total for all explained variance,
-% .partial for each regressor. All we need to care about here is
-% explained_variance.total.
-%
-% Try running regression with a range of lambda values, and save the
-% explaned variance corresponding to each lambda. Plot the explained
-% variance vs. lambda. Does this tell you what the "best" lambda value is?
+% 
 
-% 5) Make multiunit signals as above for multiple depths: bin spikes from
-% 1500um in 500um intervals until the end of the probe (to have 5 multiunit
-% signals by depth). Run regression on all of these (this can be done
-% simultaneously, just use a matrix of depth x time as the signal to be
-% predicted). 
-% - What do you notice about the kernels? 
-% - What's the biological meaning of these kernels?
+
+
+
+[fluor_taskpred_k,fluor_taskpred_long,fluor_taskpred_expl_var,fluor_taskpred_reduced_long] = ...
+    AP_regresskernel(task_regressors,wf_V(1:use_svs,:),task_regressor_sample_shifts, ...
+    lambda,zs,cvfold,return_constant,use_constant);
+
+
+%% (to be included later?)
+
+% Not included in this demo yet are these other features: 
+% - when and how to include a constant as a regressor
+% - ridge regression using a penalty value lambda
+% - cross-validation and explained variance to examine goodness-of-fit
+
 
 
 
