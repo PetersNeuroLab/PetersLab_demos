@@ -1,5 +1,8 @@
 %% Regression demo
 %
+% Before this demo, do data demo, widefield demo, and ephys demo (if doing
+% the widefield/ephys regression at the end of this demo).
+%
 % This demos how to do linear regression with the ap.regresskernel
 % function. (There are other ways to do this in MATLAB that I'm not familar
 % with, so it may be worth exploring other built-in functions to do this).
