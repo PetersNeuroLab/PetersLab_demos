@@ -512,11 +512,11 @@ ap.cellraster(stimOn_times,stim_x);
 % sorting).
 %
 % Call 'ap.cellraster' with a cell array for align times and grouping
-% variables: 
-% align times = 2x1 cell array, the first cell is stimulus times and the
-% second cell is movement times
-% grouping variables = 2x1 cell array, the first cell is stimulus groups
-% and the second cell is the sort index for movements.
+% variables: align times will be a 2-cell array with the times for stimuli
+% then movements, and the grouping variables will be a 2-cell array with 
+
+s in  should have the stim times and groups used
+% above, the second cell should have movement times and sort index.
 %
 % Use 'm' (multiunit mode) to select the visual cortex, which is depth
 % ~1500-2500. Press right/left to toggle between alignments (note at the
